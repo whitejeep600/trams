@@ -1,0 +1,70 @@
+; przystanek jest symbolem, i ma liste krawedzi wyjsciowychh.
+; krawedz jest struktem i ma numer linii (bedacy liczba)
+; oraz przystanek docelowy (bedacy symbolem, ofc).
+; szukajac z danego przystanku, sprawdzamy czy dotarlismy, i jesli tak,
+; to jakos zwracamy przejechana trase, przy czym jesli nie uda sie
+; w ogole znalezc to nil. jesli nie to dodajemy co trzeba nieodwiedzone
+; do kolejki no i wiadomo.
+; jak juz znajdziemy przystankowo optymalna trase to dobieramy potem 
+; linie, ktorymi jedziemy, tak zeby bylo jak najmniej przesiadek.
+; niech kazdy wezel pamieta kto go wrzucil do kolejki zeby sie dalo zrekonstruowac
+
+
+(defstruct edge
+  target
+  lane_no)
+
+
+(defun add_edge (number stop1 stop2)
+  (setf (get stop1 'outward) (concatenate 'list (get stop1 'outward) (list (make-edge :target stop2
+										:lane_no number)))))
+
+(defun add_edges (number stop1 stop2)
+       (add_edge number stop1 stop2)
+       (add_edge number stop2 stop1))
+
+
+(defun load_lane (number lane)
+  (if (and (not (null lane)) (not (null (rest lane))))
+      (progn (add_edges number (first lane) (second lane))
+	     (load_lane number (rest lane)))))
+
+
+(defun load_lanes (lanes)
+  (if (not (null lanes))
+      (progn (load_lane (first (first lanes)) (rest (first lanes)))
+	     (load_lanes (rest lanes)))))
+
+
+; chcemy przejsc sie po liscie linii i dodac przystankom krawdzie wyjsciowe
+(defun load_database ()
+  (load_lanes lanes))
+
+
+(if (or (not (get 'stops 'stops_defined)) (not (get 'lanes 'lanes_defined)))
+    (progn
+      (write "load the database first!\n")
+      (assert nil))
+    (load_database))
+
+(defun add_children (queue target)
+  ; wez nastepnik konca kolejki, dodaj wszystkie nieodwiedzone dzieci
+  ; jako nastepnikow konca kolejki, ustaw im ojca itd a jako nastepnika ostatniego
+  ; dziecka ustaw nastepnik nastepnika konca
+  )
+
+
+(defun search (queue target)
+  (if (eq target (second queue))
+      (target)
+      (search (add_children queue target) target)))
+
+
+(defun get_cyclic_list (a)
+  (let ((cyclic (list a)))
+    (setf (cdr cyclic) cyclic)
+    cyclic))
+
+
+(defun find (start target)
+  (search (get_cyclic_list start) target))

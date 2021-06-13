@@ -9,6 +9,9 @@
 ; linie, ktorymi jedziemy, tak zeby bylo jak najmniej przesiadek.
 ; niech kazdy wezel pamieta kto go wrzucil do kolejki zeby sie dalo zrekonstruowac
 
+; a potem jak zrekonstruujemy no to mozna sie iterowac po kazdej linii ktora wyjezdza
+; z poczatkowego przystanku i na sile kazda probowac jechac tak dlugo jak sie da i w razie
+; czego sie przesiadac
 
 (defstruct edge
   target
@@ -47,24 +50,50 @@
       (assert nil))
     (load_database))
 
-(defun add_children (queue target)
-  ; wez nastepnik konca kolejki, dodaj wszystkie nieodwiedzone dzieci
-  ; jako nastepnikow konca kolejki, ustaw im ojca itd a jako nastepnika ostatniego
-  ; dziecka ustaw nastepnik nastepnika konca
-  )
+
+(defun get_children (outward_edges stop)
+  (if (null outward_edges)
+      '()
+      (if (get (edge-target (first outward_edges)) 'visited)
+	  (get_children (rest outward_edges) stop)
+	  (progn
+	    (setf (get (edge-target (first outward_edges)) 'visited) T)
+	    (setf (get (edge-target (first outward_edges)) 'father) stop)
+	    (concatenate 'list (list (edge-target (first outward_edges))) (get_children (rest outward_edges) stop))))))
 
 
-(defun search (queue target)
-  (if (eq target (second queue))
-      (target)
-      (search (add_children queue target) target)))
+(defun get_unvisited_children (stop)
+  (get_children (get stop 'outward) stop))
 
 
-(defun get_cyclic_list (a)
-  (let ((cyclic (list a)))
-    (setf (cdr cyclic) cyclic)
-    cyclic))
+(defun add_children (queue)
+  (rest (concatenate 'list queue (get_unvisited_children (first queue)))))
 
 
-(defun find (start target)
-  (search (get_cyclic_list start) target))
+; jeszcze nul jak sie nie da
+(defun search_bfs (queue target)
+  (if (eq target (first queue))
+      target
+      (search_bfs (add_children queue) target)))
+
+
+(defun clean_stop (stop)
+  (setf (get stop 'visited) nil)
+  (setf (get stop 'father) nil))
+
+
+(defun clean_stops (stops_arg)
+  (if (not (null stops_arg))
+      (progn
+	(clean_stop (first stops_arg))
+	(clean_stops (rest stops_arg)))))
+
+
+(defun cleanup (result)
+  (clean_stops stops)
+  result)
+
+
+; jeszcze sprzatanie fatherow i visitedow oraz znajdowanie optymalnej przesiadkowo trasy
+(defun find_bfs (start target)
+  (cleanup (search_bfs (list start) target)))

@@ -8,7 +8,7 @@
 		      pole_mokotowskie saska_kepa zlote_tarasy))
 
 
-(defparameter lanes '((0 lotnisko_chopina mordor banacha_mimuw
+(defparameter lines '((0 lotnisko_chopina mordor banacha_mimuw
 			zlote_tarasy wedel_centrum)
 		     (420 stegny saska_kepa lazienki ogrod_saski
 			 akademik_uw_zoliborz)
@@ -25,4 +25,4 @@
 (setf (get 'stops 'stops_defined) T)
 
 
-(setf (get 'lanes 'lanes_defined) T)
+(setf (get 'lines 'lines_defined) T)

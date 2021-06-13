@@ -1,8 +1,0 @@
-(defparameter a (find_bfs 'stegny 'teatr_polski))
-(defparameter i (init_lanes (get (first a) 'outward) (first a) (second a)))
-(defparameter d (develop_each i (rest a)))
-(trace develop_each)
-(trace develop_one)
-(trace minimize_lanes)
-(trace get_longest)
-(trace get_longest_lane)
